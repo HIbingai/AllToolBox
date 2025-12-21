@@ -7,3 +7,10 @@ build/
 /whoyou.txt
 .vscode/
 /Cargo.lock
+target/
+*.log
+*.tmp
+*.bak
+*.pyc
+*.lock
+__pycache__/
