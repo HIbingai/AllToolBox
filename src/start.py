@@ -498,17 +498,17 @@ def pre_main() -> bool:
                 run(f'cd /d mod\\{item} && call start.bat')
 
     os.chdir("..\\bin")
-    wmic = subprocess.run(["cmd.exe", "/c", "where", "wmic.exe"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    # wmic = subprocess.run(["cmd.exe", "/c", "where", "wmic.exe"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
 
-    if wmic.returncode != 0:
-        r = input("WMIC工具未找到，是否安装WMIC？(Y/N)：")
-        if r.lower() == "y":
-            print_formatted_text(HTML(info + "坐和放宽，把时间交给我们..."), style=style)
-            print_formatted_text(HTML(info + "若提示是否重启，建议选择重启"), style=style)
-            run("DISM /Online /Add-Capability /CapabilityName:WMIC~~~~")
-            run("call refreshenv")
-        else:
-            print_formatted_text(HTML(warn + "WMIC未安装，可能导致未知问题"), style=style)
+    # if wmic.returncode != 0:
+    #     r = input("WMIC工具未找到，是否安装WMIC？(Y/N)：")
+    #     if r.lower() == "y":
+    #         print_formatted_text(HTML(info + "坐和放宽，把时间交给我们..."), style=style)
+    #         print_formatted_text(HTML(info + "若提示是否重启，建议选择重启"), style=style)
+    #         run("DISM /Online /Add-Capability /CapabilityName:WMIC~~~~")
+    #         run("call refreshenv")
+    #     else:
+    #         print_formatted_text(HTML(warn + "WMIC未安装，可能导致未知问题"), style=style)
         
     run("call withone")
     run("call afterup")
