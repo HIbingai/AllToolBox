@@ -9,11 +9,15 @@ repository = "https://github.com/AllToolBox-SC/AllToolBox"
 readme = "README.md"
 
 [[bin]]
+name = "lolcat"
+path = "src/lolcat.rs"
+
+[[bin]]
 name = "jsonutil"
 path = "src/jsonutil.rs"
 
 [[build]]
-target-dir = "build/jsonutil"
+target-dir = "build/rust"
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }

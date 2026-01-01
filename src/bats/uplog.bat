@@ -8,3 +8,6 @@ ECHO.%INFO%5.在进入qmmi功能中加入z10%RESET%
 ECHO.%INFO%6.优化与修复一键root%RESET%
 ECHO.%INFO%7.增加备份相册%RESET%
 ECHO.%INFO%8.增加7.1.1和4.4.4安装xp框架%RESET%
+ECHO.%INFO%9.增加更多安装应用方式%RESET%
+ECHO.%INFO%10.新增/更新8.1机型Root后优化[原生修复]%RESET%
+ECHO.%INFO%11.修复自动激活systemplus%RESET%

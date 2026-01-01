@@ -1,4 +1,3 @@
-ENDLOCAL
 :roottmp
 CLS
 if exist .\roottmp.txt (
@@ -7,9 +6,9 @@ if exist .\roottmp.txt (
     echo.%YELLOW%你上一次的一键root可能没有完成，需要从断开位置继续吗?
     set /p rootyesno=%YELLOW%输入yes继续输入no将删除未完成记录：%RESET%
     set /p roottmp=<roottmp.txt
-    if "!rootyesno!"=="yes" device_check.exe adb qcom_edl fastboot & ECHO. & ENDLOCAL & SETLOCAL disabledelayedexpansion & goto !roottmp!
+    if "!rootyesno!"=="yes" device_check.exe adb qcom_edl fastboot & ECHO. & SETLOCAL disabledelayedexpansion & goto !roottmp!
     if "!rootyesno!"=="no" del /Q /F .\roottmp.txt
-    if "!rootyesno!"=="y" device_check.exe adb qcom_edl fastboot & ECHO. & ENDLOCAL & SETLOCAL disabledelayedexpansion & goto !roottmp!
+    if "!rootyesno!"=="y" device_check.exe adb qcom_edl fastboot & ECHO. & SETLOCAL disabledelayedexpansion & goto !roottmp!
     if "!rootyesno!"=="n" del /Q /F .\roottmp.txt
     goto roottmp
 )
@@ -19,7 +18,6 @@ set nouserdata=1
 ECHO.%INFO%你选择了不刷userdata，这可能导致设备出现问题
 pause
 :ROOT
-ENDLOCAL
 SETLOCAL disabledelayedexpansion
 CLS
 echo %YELLOW%════════════════════════%RESET%
@@ -525,7 +523,7 @@ busybox sleep 7
 ECHO.%INFO%正在自动激活，请稍后
 busybox.exe sleep 10
 run_cmd "adb shell input keyevent 4"
-run_cmd "adb shell am start -n com.huanli233.systemplus/.ActiveSelfActivity"
+run_cmd "adb shell ""su -c am start -n com.huanli233.systemplus/.ActiveSelfActivity"""
 device_check.exe adb&&ECHO.
 adb shell input swipe 160 300 160 60 100
 adb shell input swipe 160 300 160 60 100
@@ -533,19 +531,22 @@ adb shell input swipe 160 300 160 60 100
 adb shell input swipe 160 300 160 60 100
 adb shell input swipe 160 300 160 60 100
 adb shell input swipe 160 300 160 60 100
+adb shell input tap 200 150
 adb shell input tap 200 200
 adb shell input swipe 160 60 160 300 100
 adb shell input swipe 160 60 160 300 100
+adb shell input tap 200 150
 adb shell input tap 200 200
 adb shell input swipe 160 300 160 60 100
 adb shell input swipe 160 300 160 60 100
-adb shell input tap 200 120
+adb shell input tap 200 100
+adb shell input tap 200 150
 goto xposed-check
 :ROOT-Xposed
 ECHO.%INFO%正在启动投屏！如手表端不方便操作，可在电脑端进行操作
 ECHO.%INFO%提示：如果手表息屏，在投屏窗口单击右键即可
 start scrcpy-noconsole.vbs
-run_cmd "adb shell am start -n com.huanli233.systemplus/.ActiveSelfActivity"
+run_cmd "adb shell ""su -c am start -n com.huanli233.systemplus/.ActiveSelfActivity"""
 ECHO.%INFO%请往下滑，找到自激活，然后点击激活SystemPlus与激活核心破解，然后按任意键继续
 pause
 :xposed-check
@@ -704,6 +705,4 @@ ECHO.%YELLOW%是否进行预装优化[包括模块和应用，期间需要多次选择]？
 set /p rootpro=%YELLOW%输入y进行优化，按任意键直接退出%RESET% 
 if /i "%rootpro%"=="y" call rootpro
 del /Q /F .\roottmp.txt
-ECHO.%INFO%按任意键返回...
-pause
 exit /b

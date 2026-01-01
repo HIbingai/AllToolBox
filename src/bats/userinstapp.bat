@@ -10,7 +10,7 @@ ECHO ║1.选择并安装单个APK文件                           ║
 ECHO ║2.选择并安装多个APK文件                           ║
 ECHO ║3.选择一个文件夹并安装其中的所有APK文件           ║
 ECHO ║4.检查adb设备连接                                 ║
-ECHO ║5.选择安装方式                                 ║
+ECHO ║5.选择安装方式                                    ║
 ECHO ╚══════════════════════════════════════════════════╝
 ECHO.%RESET%
 set /p MENU=%YELLOW%请输入序号并按下回车键：%RESET%
@@ -51,7 +51,7 @@ device_check.exe adb&&ECHO.
 ECHO.
 
 echo %INFO% 正在安装应用...%RESET%
-
+set /p instmod=<instmod.txt
 call instapp %sel__file_path% %instmod%
 
 echo.
@@ -87,34 +87,11 @@ set FAILED=0
 
 REM 创建临时目录
 if not exist ".\tmp" mkdir ".\tmp"
-
+set /p instmod=<instmod.txt
 for %%i in (%sel__files:/= %) do (
     echo.
     echo %CYAN%正在安装: %%~nxi%RESET%
-    for %%A in ("%%i") do set SIZE_BYTES=%%~zA
-    
-    REM 执行安装并将输出重定向到临时文件
-    adb wait-for-device install -r -t -d "%%i" > ".\tmp\instapptmp.txt" 2>&1
-    
-    REM 检查输出中是否包含Success
-    find /i "Success" ".\tmp\instapptmp.txt" >nul
-    if !errorlevel! equ 0 (
-        echo %GREEN% 成功%RESET%
-        set /a SUCCESS+=1
-    ) else (
-        echo %ERROR% 失败，尝试备用方案%RESET%
-        call :ALTERNATIVE_INSTALL "%%i" "!SIZE_BYTES!"
-        if !errorlevel! equ 0 (
-            echo %GREEN% 备用方案成功%RESET%
-            set /a SUCCESS+=1
-        ) else (
-            echo %ERROR% 备用方案失败%RESET%
-            set /a FAILED+=1
-        )
-    )
-    
-    REM 删除临时文件
-    if exist ".\tmp\instapptmp.txt" del ".\tmp\instapptmp.txt" >nul 2>&1
+    call instapp %%i %instmod%
 )
 
 echo.
@@ -158,38 +135,15 @@ set FAILED=0
 
 REM 创建临时目录
 if not exist ".\tmp" mkdir ".\tmp"
-
+set /p instmod=<instmod.txt
 for /l %%n in (1,1,!COUNT!) do (
     set "file=!FILE_%%n!"
     for %%A in ("!file!") do (
         set "filename=%%~nxA"
-        set SIZE_BYTES=%%~zA
     )
     echo.
     echo %CYAN%正在安装: !filename!%RESET%
-    
-    REM 执行安装并将输出重定向到临时文件
-    adb wait-for-device install -r -t -d "!file!" > ".\tmp\instapptmp.txt" 2>&1
-    
-    REM 检查输出中是否包含Success
-    find /i "Success" ".\tmp\instapptmp.txt" >nul
-    if !errorlevel! equ 0 (
-        echo %GREEN% 成功%RESET%
-        set /a SUCCESS+=1
-    ) else (
-        echo %ERROR% 失败，尝试备用方案%RESET%
-        call :ALTERNATIVE_INSTALL "!file!" "!SIZE_BYTES!"
-        if !errorlevel! equ 0 (
-            echo %GREEN% 备用方案成功%RESET%
-            set /a SUCCESS+=1
-        ) else (
-            echo %ERROR% 备用方案失败%RESET%
-            set /a FAILED+=1
-        )
-    )
-    
-    REM 删除临时文件
-    if exist ".\tmp\instapptmp.txt" del ".\tmp\instapptmp.txt" >nul 2>&1
+    call instapp !file! %instmod%
 )
 
 echo.
@@ -241,95 +195,25 @@ pause >nul
 endlocal
 goto MAIN_MENU
 
-:ALTERNATIVE_INSTALL
-ECHO.请接入ADB设备...
-device_check.exe adb&&ECHO.
-
-setlocal enabledelayedexpansion
-set "APK_PATH=%~1"
-set "APK_SIZE=%~2"
-set "APK_NAME=%~nx1"
-
-echo %INFO% 使用 pm install-create 安装...%RESET%
-
-REM 创建临时目录
-if not exist ".\tmp" mkdir ".\tmp"
-
-REM 创建安装会话
-set "SESSION_ID="
-for /f "tokens=2 delims=[]" %%i in ('adb shell pm install-create -r -t -S !APK_SIZE!') do (
-    set "SESSION_ID=%%i"
-)
-
-if "!SESSION_ID!"=="" (
-    echo %ERROR% 创建安装会话失败%RESET%
-    REM 删除临时文件
-    if exist ".\tmp\instapptmp.txt" del ".\tmp\instapptmp.txt" >nul 2>&1
-    endlocal
-    exit /b 1
-)
-
-echo %INFO% 会话创建成功: [!SESSION_ID!]%RESET%
-
-REM 推送APK文件到设备临时目录
-echo %INFO% 推送APK文件到设备...%RESET%
-adb wait-for-device push "!APK_PATH!" /data/local/tmp/!APK_NAME!
-
-REM 写入会话
-echo %INFO% 写入安装会话...%RESET%
-adb shell pm install-write !SESSION_ID! base.apk /data/local/tmp/!APK_NAME!
-
-REM 提交安装并将输出重定向到临时文件
-echo %INFO% 提交安装...%RESET%
-adb shell pm install-commit !SESSION_ID! > ".\tmp\instapptmp.txt" 2>&1
-
-REM 检查输出中是否包含Success
-find /i "Success" ".\tmp\instapptmp.txt" >nul
-if !errorlevel! equ 0 (
-    echo %GREEN% pm install-create 安装成功%RESET%
-    REM 清理临时文件
-    adb shell rm -f /data/local/tmp/!APK_NAME!
-    REM 删除临时文件
-    if exist ".\tmp\instapptmp.txt" del ".\tmp\instapptmp.txt" >nul 2>&1
-    endlocal
-    exit /b 0
-) else (
-    echo %ERROR% pm install-create 安装失败%RESET%
-    REM 清理临时文件
-    adb shell rm -f /data/local/tmp/!APK_NAME!
-    REM 删除临时文件
-    if exist ".\tmp\instapptmp.txt" del ".\tmp\instapptmp.txt" >nul 2>&1
-    endlocal
-    exit /b 1
-)
-
 :INSTALL_MOD
 CLS
 call logo.bat
 ECHO %ORANGE%安装应用菜单%YELLOW%
 ECHO ╔══════════════════════════════════════════════════╗
 ECHO ║A.返回上级菜单                                    ║
-ECHO ║1.install方式安装                           ║
-ECHO ║2.data方式安装                           ║
-ECHO ║3.调用第三方安装器安装               ║
-ECHO ║4.install-create方式安装                                 ║
-ECHO ║5.要用root权限的pm安装                                 ║
+ECHO ║1.install方式安装                                 ║
+ECHO ║2.data方式安装                                    ║
+ECHO ║3.调用第三方安装器安装                            ║
+ECHO ║4.install-create方式安装                          ║
 ECHO ╚══════════════════════════════════════════════════╝
 ECHO.%RESET%
 set /p MENU=%YELLOW%请输入序号并按下回车键：%RESET%
-if "%MENU%"=="A" (
-    if exist ".\tmp\instapptmp.txt" del ".\tmp\instapptmp.txt" >nul 2>&1
-    exit /b
-)
-if "%MENU%"=="a" (
-    if exist ".\tmp\instapptmp.txt" del ".\tmp\instapptmp.txt" >nul 2>&1
-    exit /b
-)
-if "%MENU%"=="1" set /p="install" <nul > instmod.txt&&goto INSTALL_MOD
-if "%MENU%"=="2" set /p="data" <nul > instmod.txt&&goto INSTALL_MOD
-if "%MENU%"=="3" set /p="3install" <nul > instmod.txt&&goto INSTALL_MOD
-if "%MENU%"=="4" set /p="create" <nul > instmod.txt&&goto INSTALL_MOD
-if "%MENU%"=="5" set /p="rootinstall" <nul > instmod.txt&&goto INSTALL_MOD
+if "%MENU%"=="A" goto MAIN_MENU
+if "%MENU%"=="a" goto MAIN_MENU
+if "%MENU%"=="1" set /p="install" <nul > instmod.txt & goto INSTALL_MOD
+if "%MENU%"=="2" set /p="data" <nul > instmod.txt & goto INSTALL_MOD
+if "%MENU%"=="3" set /p="3install" <nul > instmod.txt & goto INSTALL_MOD
+if "%MENU%"=="4" set /p="create" <nul > instmod.txt & goto INSTALL_MOD
 ECHO %ERROR%输入错误，请重新输入！%RESET%
 timeout /t 2 >nul
 goto INSTALL_MOD

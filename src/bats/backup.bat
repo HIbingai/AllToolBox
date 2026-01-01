@@ -7,18 +7,18 @@ if "%1"=="DCIM" goto DCIM
 CLS
 call logo.bat
 ECHO %ORANGE%%YELLOW%
-ECHO â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-ECHO â•‘A.è¿”å›ä¸Šçº§èœå•                                    â•‘
-ECHO â•‘1.å¤‡ä»½ç›¸å†Œ                           â•‘
-ECHO â•‘2.æ¢å¤ç›¸å†Œ                           â•‘
-ECHO â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ECHO ¨X¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨[
+ECHO ¨UA.·µ»ØÉÏ¼¶²Ëµ¥                                    ¨U
+ECHO ¨U1.±¸·İÏà²á                           ¨U
+ECHO ¨U2.»Ö¸´Ïà²á                           ¨U
+ECHO ¨^¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨a
 ECHO.%RESET%
-set /p MENU=%YELLOW%è¯·è¾“å…¥åºå·å¹¶æŒ‰ä¸‹å›è½¦é”®ï¼š%RESET%
+set /p MENU=%YELLOW%ÇëÊäÈëĞòºÅ²¢°´ÏÂ»Ø³µ¼ü£º%RESET%
 if "%MENU%"=="A" exit /b
 if "%MENU%"=="a" exit /b
 if "%MENU%"=="1" goto DCIM-backup
 if "%MENU%"=="2" goto DCIM-recover
-ECHO %ERROR%è¾“å…¥é”™è¯¯ï¼Œè¯·é‡æ–°è¾“å…¥ï¼%RESET%
+ECHO %ERROR%ÊäÈë´íÎó£¬ÇëÖØĞÂÊäÈë£¡%RESET%
 timeout /t 2 >nul
 goto MAIN_MENU
 
@@ -29,45 +29,45 @@ if "%2"=="backup" goto DCIM-backup
 
 :DCIM-recover
 if "%3"=="noask" goto DCIM-recover-noask
-echo %INFO%ä½ è¦ä»å“ªä¸ªæ–‡ä»¶å¤¹è¿›è¡Œæ¢å¤ï¼Ÿ%RESET%
+echo %INFO%ÄãÒª´ÓÄÄ¸öÎÄ¼ş¼Ğ½øĞĞ»Ö¸´£¿%RESET%
 call sel folder s %cd%\backup
-echo.%info%æ­£åœ¨æ¢å¤ç›¸å†Œ...
+echo.%info%ÕıÔÚ»Ö¸´Ïà²á...
 adb push "%sel__folder_path%" /sdcard/DCIM/
 if %errorlevel%==0 (
-    echo.%info%æ¢å¤æˆåŠŸ
+    echo.%info%»Ö¸´³É¹¦
 ) else (
-    echo.%error%æ¢å¤å¤±è´¥
+    echo.%error%»Ö¸´Ê§°Ü
 )
 
 :DCIM-recover-noask
-echo.%info%æ­£åœ¨æ¢å¤ç›¸å†Œ...
+echo.%info%ÕıÔÚ»Ö¸´Ïà²á...
 adb push "backup\%backupname%" /sdcard/DCIM/
 if %errorlevel%==0 (
-    echo.%info%æ¢å¤æˆåŠŸ
+    echo.%info%»Ö¸´³É¹¦
 ) else (
-    echo.%error%æ¢å¤å¤±è´¥
+    echo.%error%»Ö¸´Ê§°Ü
 )
 
 :DCIM-backup
 if "%3"=="noask" goto DCIM-backup-noask
-echo %INFO%ä½ è¦å°†ç›¸å†Œå¤‡ä»½åˆ°å“ªä¸ªæ–‡ä»¶å¤¹å†…ï¼Ÿ%RESET%
+echo %INFO%ÄãÒª½«Ïà²á±¸·İµ½ÄÄ¸öÎÄ¼ş¼ĞÄÚ£¿%RESET%
 call sel folder s %cd%\backup
-echo.%info%æ­£åœ¨å¤‡ä»½ç›¸å†Œ...
+echo.%info%ÕıÔÚ±¸·İÏà²á...
 adb pull /sdcard/DCIM "%sel__folder_path%"
 if %errorlevel%==0 (
-    echo.%info%å¤‡ä»½æˆåŠŸ
+    echo.%info%±¸·İ³É¹¦
 ) else (
-    echo.%error%å¤‡ä»½å¤±è´¥
+    echo.%error%±¸·İÊ§°Ü
 )
 
 :DCIM-backup-noask
-echo.%info%æ­£åœ¨å¤‡ä»½ç›¸å†Œ...
+echo.%info%ÕıÔÚ±¸·İÏà²á...
 for /f "delims=" %%i in ('adb wait-for-device shell getprop ro.product.model') do set model=%%i
 set backupname=DCIM_%model%_%date%_%time%
 mkdir "backup\%backupname%"
 adb pull /sdcard/DCIM "backup\%backupname%"
 if %errorlevel%==0 (
-    echo.%info%å¤‡ä»½æˆåŠŸ
+    echo.%info%±¸·İ³É¹¦
 ) else (
-    echo.%error%å¤‡ä»½å¤±è´¥
+    echo.%error%±¸·İÊ§°Ü
 )
