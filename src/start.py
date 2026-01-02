@@ -62,9 +62,9 @@ def menu() -> str:
         os.remove("mod") if os.path.isfile("mod") else ...
         os.makedirs("mod", exist_ok=True)
     kb = KeyBindings()
-    @kb.add('R')
-    def _(event):
-        event.app.exit(result="SHIFT_R")
+    # @kb.add('R')
+    # def _(event):
+    #     event.app.exit(result="SHIFT_R")
     
     @kb.add('D')
     def _(event):
@@ -572,9 +572,7 @@ def pre_main() -> bool:
     whoyou = open("whoyou.txt", "w", encoding="gbk")
     whoyou.write("2")
     whoyou.close()
-    print_formatted_text(HTML("<yellow>" + LINE + "</yellow>"), style=style)
-    print_formatted_text(HTML(f"""
-        {warn}关于解绑：该工具不提供手表强制解绑服务，如您拾取他人的手表，请联系当地110公安机关归还失主。手表解绑属于非法行为，请归还失主。而不要尝试通过任何手段解除挂失锁
+    print_formatted_text(HTML(f"""{warn}关于解绑：该工具不提供手表强制解绑服务，如您拾取他人的手表，请联系当地110公安机关归还失主。手表解绑属于非法行为，请归还失主。而不要尝试通过任何手段解除挂失锁
         {warn}关于收费：这个工具是完全免费的，如果你付费购买了那么请退款
         {warn}本脚本部分功能可能造成侵权问题，并可能受到法律追究，所以仅供个人使用，请勿用于商业用途
         {info}---请永远相信我们能给你带来免费又好用的工具---
@@ -583,9 +581,7 @@ def pre_main() -> bool:
         {info}作者QQ：3247039462
         {info}工具箱交流与反馈QQ群：907491503
         {info}作者哔哩哔哩账号：https://b23.tv/L54R5ZV
-        {info}bug与建议反馈邮箱：ATBbug@xgj.qzz.io
-    """.replace(" " * 8, "")), style=style)
-    print_formatted_text(HTML("<yellow>" + LINE + "</yellow>"), style=style)
+        {info}bug与建议反馈邮箱：ATBbug@xgj.qzz.io""".replace(" " * 8, "")), style=style)
     print_formatted_text(HTML(info + "按任意键进入主界面"), style=style)
 
     pause()
