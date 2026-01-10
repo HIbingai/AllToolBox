@@ -1,5 +1,6 @@
 import requests
-import os, sys
+import os
+import sys
 import time
 import tqdm
 import py7zr
@@ -9,9 +10,8 @@ import filehash
 def main():
     print("AllToolBox 修复工具")
     with open(".\\bin\\bugversion.txt", "r") as fv:
-        vcf = open(".\\bin\\version.txt")
-        vc = vcf.read().strip()
-        vcf.close()
+        with open(".\\bin\\version.txt") as vcf:
+            vc = vcf.read().strip()
         webv = requests.get(f"https://atb.xgj.qzz.io/other/bugup/{vc}/manifest.json")
         webvc = webv.json()["latestBugUpdate"]["ver"]
         filev = int(fv.read().strip())
@@ -24,10 +24,10 @@ def main():
             response = requests.get(url, stream=True)
             size = int(response.headers.get("content-length", 0))
             with tqdm.tqdm(total=size, unit="B", unit_scale=True, desc="bugjump.7z") as bar:
-               with open("bugjump.7z", "wb") as bj:
-                   for data in response.iter_content(chunk_size=1024):
-                       bj.write(data)
-                       bar.update(len(data))
+                with open("bugjump.7z", "wb") as bj:
+                    for data in response.iter_content(chunk_size=1024):
+                        bj.write(data)
+                        bar.update(len(data))
             md5f = filehash.FileHash("md5").hash_file("bugjump.7z")
             if md5f != md5:
                 print("校验失败")
@@ -39,7 +39,8 @@ def main():
             print("成功", end="\n")
             time.sleep(3)
             os.system("cmd /c start 双击运行.exe")
-            
+
+
 if __name__ == "__main__":
     main()
     sys.exit(0)

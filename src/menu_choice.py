@@ -1,5 +1,5 @@
 import time
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Sequence, Tuple
 
 from prompt_toolkit.application import Application
 from prompt_toolkit.application.current import get_app
@@ -7,7 +7,6 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.key_binding.key_processor import KeyPressEvent
 from prompt_toolkit.layout import Layout
 from prompt_toolkit.mouse_events import MouseEventType, MouseButton
-from prompt_toolkit.shortcuts import clear
 from prompt_toolkit.widgets import RadioList
 from prompt_toolkit.styles import Style, merge_styles
 
@@ -53,12 +52,14 @@ def menu_choice(message: str, options: Iterable[Option], default: str | None = N
         idx = radio._selected_index or 0
         event.app.exit(result=option_list[idx][0])
 
-    # 数字快捷键：连续数字支持多位，超过0.25秒自动重置缓冲。
+    # 数字快捷键：连续数字支持两位及以上；间隔>0.2s自动重置。
     digit_buf = {"text": "", "t": 0.0}
 
     def _select_by_number(event: KeyPressEvent, digit: str) -> None:
         now = time.monotonic()
-        digit_buf["text"] = digit if (now - digit_buf["t"]) > 0.25 else digit_buf["text"] + digit
+        if now - digit_buf["t"] > 0.2:
+            digit_buf["text"] = ""
+        digit_buf["text"] += digit
         digit_buf["t"] = now
         try:
             idx = int(digit_buf["text"]) - 1
@@ -117,7 +118,6 @@ def menu_choice(message: str, options: Iterable[Option], default: str | None = N
         style=app_style,
     )
     result = app.run()
-    clear()
     # Fallback: if current_value is None, derive from selected index.
     if result is None:
         sel = radio._selected_index or 0

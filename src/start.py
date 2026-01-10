@@ -1,7 +1,9 @@
 """入口脚本，仅保留菜单相关逻辑，其余功能拆分到独立模块。"""
 
 import os
+import sys
 import subprocess
+import ctypes
 
 import colorama
 from prompt_toolkit import ANSI, HTML, print_formatted_text
@@ -16,6 +18,28 @@ from startup import cleanup, pre_main
 
 initialized = False
 key_interrupted = False
+
+
+def ensure_admin() -> bool:
+    if os.name != "nt":
+        return True
+    try:
+        if ctypes.windll.shell32.IsUserAnAdmin():
+            return True
+    except Exception:
+        return True
+
+    script = os.path.abspath(__file__)
+    params = f'"{script}"'
+    try:
+        rc = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)
+        if rc <= 32:
+            print_formatted_text(HTML(WARN + "请求管理员权限失败，将以当前权限继续"), style=style)
+            return True
+        return False
+    except Exception:
+        print_formatted_text(HTML(WARN + "请求管理员权限失败，将以当前权限继续"), style=style)
+        return True
 
 
 def menu() -> str:
@@ -69,8 +93,10 @@ def main() -> int:
 
         if not initialized:
             pre_ready = pre_main()
-            if not pre_ready:
+            if pre_ready is False:
                 return 1
+            if pre_ready == 2:
+                return 0
             initialized = True
 
         run("call logo")
@@ -115,4 +141,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    cleanup(main())
+    if ensure_admin():
+        cleanup(main())
