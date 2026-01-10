@@ -4,7 +4,10 @@ import platform
 import time
 import subprocess
 import socket
+import shutil
 from typing import Tuple
+
+import requests
 
 import colorama
 from prompt_toolkit import HTML, print_formatted_text
@@ -35,6 +38,64 @@ def pause():
     PromptSession(key_bindings=kb).prompt("")
 
 
+def ensure_bug_patch_up_to_date() -> bool:
+    """Check remote bug patch manifest and start repair flow when outdated."""
+    bug_file = "bugversion.txt"
+    version_file = "version.txt"
+    if not os.path.exists(bug_file):
+        with open(bug_file, "w", encoding="utf-8") as fv:
+            fv.write("0")
+
+    try:
+        with open(version_file, "r", encoding="utf-8") as vcf:
+            version = vcf.read().strip()
+    except FileNotFoundError:
+        print_formatted_text(HTML(WARN + "未找到 version.txt，跳过补丁检查"), style=style)
+        return True
+
+    try:
+        with open(bug_file, "r", encoding="utf-8") as fv:
+            local_bug_ver = int(fv.read().strip() or 0)
+    except (ValueError, OSError):
+        local_bug_ver = 0
+
+    manifest_url = f"https://atb.xgj.qzz.io/other/bugup/{version}/manifest.json"
+    try:
+        response = requests.get(manifest_url, timeout=8)
+        response.raise_for_status()
+        manifest = response.json().get("latestBugUpdate", {})
+    except Exception as exc:
+        print_formatted_text(HTML(WARN + f"补丁更新检查失败，已跳过 ({exc})"), style=style)
+        return True
+
+    remote_bug_ver = manifest.get("ver")
+    try:
+        remote_bug_ver = int(remote_bug_ver)
+    except (TypeError, ValueError):
+        return True
+
+    if remote_bug_ver > local_bug_ver:
+        print_formatted_text(HTML(WARN + "当前补丁版本过时，必须更新"), style=style)
+        print_formatted_text(HTML(INFO + "按任意键开始更新..."), style=style)
+        pause()
+        repair_src = os.path.join(os.getcwd(), "repair.exe")
+        repair_dst = os.path.abspath(os.path.join(os.getcwd(), "..", "repair.exe"))
+        try:
+            shutil.copy2(repair_src, repair_dst)
+        except FileNotFoundError:
+            print_formatted_text(HTML(ERROR + "未找到 repair.exe，无法执行补丁更新"), style=style)
+            return False
+        except PermissionError:
+            print_formatted_text(HTML(ERROR + "复制 repair.exe 失败（权限不足）"), style=style)
+            return False
+
+        subprocess.Popen(["cmd", "/c", "start", "repair.exe"], cwd=os.path.dirname(repair_dst), shell=True)
+        print_formatted_text(HTML(INFO + "已启动补丁更新程序，请完成修复后重新运行工具箱"), style=style)
+        return False
+
+    return True
+
+
 def pre_main() -> bool:
     bin_path = os.path.abspath(os.path.join(os.getcwd(), ".", "bin"))
     if os.path.isdir(bin_path):
@@ -60,6 +121,18 @@ def pre_main() -> bool:
 
     print_formatted_text(HTML(INFO + "检查系统变量[PATH]..."), style=style)
     run("set PATH=%PATH%;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;%cd%\\")
+    print_formatted_text(HTML(INFO + "查询补丁包更新..."), style=style)
+    if not ensure_bug_patch_up_to_date():
+        return False
+
+    for leftover in ("bugjump.7z", "repair.exe"):
+        leftover_path = os.path.abspath(os.path.join(os.getcwd(), "..", leftover))
+        if os.path.exists(leftover_path):
+            try:
+                os.remove(leftover_path)
+            except OSError:
+                print_formatted_text(HTML(WARN + f"清理临时文件失败: {leftover_path}"), style=style)
+
     print_formatted_text(HTML(INFO + "检查系统变量[PATHEXT]..."), style=style)
     run("set PATHEXT=%PATHEXT%;.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;")
     set_title("XTC AllToolBox by xgj_236")
